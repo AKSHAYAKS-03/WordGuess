@@ -52,12 +52,12 @@ namespace Word_Guessing_Game.Models
             bool correctguess = false;
 
             int attempts;
-            for(attempts = 0; attempts <= maxAttempts; attempts++)
+            for(attempts = 1; attempts <= maxAttempts; attempts++)
             {
                 try
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"Attempt {attempts + 1}: Enter your guess: ");
+                    Console.WriteLine($"Attempt {attempts}: Enter your guess: ");
                     string guess = (Console.ReadLine() ?? "").ToUpper();
 
                     _guessValidator.ValidateGuess(guess);
@@ -81,8 +81,8 @@ namespace Word_Guessing_Game.Models
                         Console.ResetColor();
 
                         DisplayAttempComment(attempts);
-                        _score = maxAttempts - (attempts + 1);
-                        Console.WriteLine($"Your score: {_score}");
+                        _score = maxAttempts - attempts;
+                        Console.WriteLine($"\nYour score: {_score}");
 
                         break;
                     }
@@ -170,27 +170,35 @@ namespace Word_Guessing_Game.Models
         {
             Console.WriteLine();
 
+
             switch (attempts)
             {
                 case 1:
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
                     Console.WriteLine("Genius!");
                     break;
                 case 2:
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Excellent!");
                     break;
                 case 3:
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Great job!");
                     break;
                 case 4:
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine("Good work!");
                     break;
                 case 5:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine("Nice try!");
                     break;
                 case 6:
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("That was close!");
                     break;
                 default:
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     Console.WriteLine("No Comments!");
                     break;
             }
