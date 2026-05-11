@@ -10,14 +10,15 @@ namespace Word_Guessing_Game.Models
         private readonly WordProvider _wordProvider;
         private readonly GuessValidator _guessValidator;
         private readonly FeedbackGenerator _feedbackGenerator;
-
+        private readonly UserService _userService;
 
         private List<string> _guesses;
         private string _hiddenword;
         private int _score;
 
-        public Game()
+        public Game(UserService userService)
         {
+            _userService = userService;
             _wordProvider = new WordProvider();
             _guessValidator = new GuessValidator();
             _feedbackGenerator = new FeedbackGenerator();
@@ -31,9 +32,8 @@ namespace Word_Guessing_Game.Models
         public void StartGame()
         {
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("\n\n==================== WORD GUESSS GAME ====================");
+            Console.WriteLine("\n\n---------------------- Game Starts ----------------------");
             Console.WriteLine();
-            Console.WriteLine("Welcome to the Word Guessing Game!");
             Console.ResetColor();
 
             Console.WriteLine();
@@ -41,11 +41,26 @@ namespace Word_Guessing_Game.Models
             Console.WriteLine("1. Easy");
             Console.WriteLine("2. Medium");
             Console.WriteLine("3. Hard");
+            Console.WriteLine("4. Exit");
 
             Console.WriteLine("Enter choice: ");
 
-            int difficulty = Convert.ToInt32(Console.ReadLine() ?? "1");
-            int maxAttempts = getMaxAttempts(difficulty);
+            if (!int.TryParse(Console.ReadLine(), out int difficulty))
+            {
+                difficulty = 1;
+            }
+            if(difficulty == 4)
+            {
+                Console.WriteLine("Exiting the game. Goodbye!");
+                return;
+            }
+            if (difficulty < 1 || difficulty > 3)
+            {
+                Console.WriteLine("Invalid difficulty level. Defaulting to Easy.");
+                difficulty = 1;
+            }
+
+            int maxAttempts = GetMaxAttempts(difficulty);
 
             Console.WriteLine($"\nYou have {maxAttempts} attempts to guess the word.\n");
 
@@ -58,7 +73,7 @@ namespace Word_Guessing_Game.Models
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"Attempt {attempts}: Enter your guess: ");
-                    string guess = (Console.ReadLine() ?? "").ToUpper();
+                    string guess = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
 
                     _guessValidator.ValidateGuess(guess);
 
@@ -80,9 +95,12 @@ namespace Word_Guessing_Game.Models
                         Console.WriteLine("Congratulations! You guessed the word!");
                         Console.ResetColor();
 
-                        DisplayAttempComment(attempts);
-                        _score = maxAttempts - attempts;
+                        DisplayAttemptComment(attempts);
+                        _score = Math.Max(1, maxAttempts - attempts + 1);
+                        string comment = GetAttemptComment(attempts);
                         Console.WriteLine($"\nYour score: {_score}");
+                        Console.WriteLine($"Comment: {comment}");
+                        _userService.SaveScore(_score, _hiddenword, attempts, comment);
 
                         break;
                     }
@@ -94,7 +112,7 @@ namespace Word_Guessing_Game.Models
                     Console.WriteLine($"Invalid guess: {ex.Message}");
                     Console.ResetColor();
                 }
-                catch(InvalidCastException ex)
+                catch(InvalidDifficultyException ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Error: {ex.Message}");
@@ -116,12 +134,16 @@ namespace Word_Guessing_Game.Models
                 Console.WriteLine($"Game Over! The word was: {_hiddenword}");
                 Console.ResetColor();
 
+                _score = 0;
+                Console.WriteLine($"Score: {_score}");
+                _userService.SaveScore(_score, _hiddenword, maxAttempts, "No comment");
+
             }
      }
 
      //difficulty based attempt calculations
 
-        public int getMaxAttempts(int difficulty)
+        public int GetMaxAttempts(int difficulty)
         {
             switch (difficulty)
             {
@@ -132,7 +154,7 @@ namespace Word_Guessing_Game.Models
                 case 3:
                     return 4;
                 default:
-                    throw new InvalidCastException("Invalid difficulty level.");
+                    throw new InvalidDifficultyException("Invalid difficulty level.");
             }
         }
 
@@ -166,42 +188,41 @@ namespace Word_Guessing_Game.Models
             Console.WriteLine();
         }
 
-        public void DisplayAttempComment(int attempts)
+        public void DisplayAttemptComment(int attempts)
         {
+            string comment = GetAttemptComment(attempts);
             Console.WriteLine();
+            Console.ForegroundColor = GetCommentColor(attempts);
+            Console.WriteLine(comment);
+            Console.ResetColor();
+        }
 
-
-            switch (attempts)
+        private string GetAttemptComment(int attempts)
+        {
+            return attempts switch
             {
-                case 1:
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.WriteLine("Genius!");
-                    break;
-                case 2:
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Excellent!");
-                    break;
-                case 3:
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine("Great job!");
-                    break;
-                case 4:
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("Good work!");
-                    break;
-                case 5:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Nice try!");
-                    break;
-                case 6:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("That was close!");
-                    break;
-                default:
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("No Comments!");
-                    break;
-            }
+                1 => "Genius!",
+                2 => "Excellent!",
+                3 => "Great job!",
+                4 => "Good work!",
+                5 => "Nice try!",
+                6 => "That was close!",
+                _ => "No comment"
+            };
+        }
+
+        private ConsoleColor GetCommentColor(int attempts)
+        {
+            return attempts switch
+            {
+                1 => ConsoleColor.DarkGreen,
+                2 => ConsoleColor.Green,
+                3 => ConsoleColor.Blue,
+                4 => ConsoleColor.DarkYellow,
+                5 => ConsoleColor.Yellow,
+                6 => ConsoleColor.Red,
+                _ => ConsoleColor.Gray
+            };
         }
 
     }

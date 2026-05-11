@@ -1,34 +1,24 @@
+using Word_Guessing_Game.Database;
+using Npgsql;
+
 namespace Word_Guessing_Game.Services
 {
     public class WordProvider
     {
-        private readonly List<string> wordlist;
-
-        public WordProvider()
-        {
-
-            //hidden words
-            wordlist = new List<string>
-            {
-                "APPLE",
-                "MANGO",
-                "GRAPE",
-                "TRAIN",
-                "PLANT",
-                "BRAIN"
-            };
-        }
-
         public string GetRandomWord()
         {
-            Random r = new Random();
-            
-            //getting a random index fromthe length of the wordlist
-            int index = r.Next(wordlist.Count);
+            using var conn = DbConnection.GetConnection();
+            conn.Open();
 
-            return wordlist[index];
+            const string query = "SELECT word FROM words ORDER BY RANDOM() LIMIT 1;";
+            using var cmd = new NpgsqlCommand(query, conn);
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return reader.GetString(0).ToUpperInvariant();
+            }
 
-
+            return "APPLE";
         }
     }
 }

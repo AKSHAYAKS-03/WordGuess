@@ -9,17 +9,14 @@ namespace Word_Guessing_Game.Services
       
       public void ValidateGuess(string guess)
         {
+            guess = (guess ?? string.Empty).Trim().ToUpperInvariant();
 
             //input validations
             if(guess.Length == 0)
             {
-                throw new InvalidCastException("Guess cannot be empty.");
+                throw new InvalidGuessException("Guess cannot be empty.");
             }
-            if(guess.Length < 5)
-            {
-                throw new InvalidGuessException("Guess must be 5 letters long.");
-            }
-            if(guess.Length > 5)
+            if(guess.Length != 5)
             {
                 throw new InvalidGuessException("Guess must be 5 letters long.");
             }
