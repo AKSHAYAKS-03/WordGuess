@@ -151,7 +151,7 @@ namespace Word_Guessing_Game.Services
             using var conn = DbConnection.GetConnection();
             conn.Open();
 
-            const string query = @"SELECT score, hidden_word, attempts_used, comment, played_at  FROM scores WHERE user_id = @user_id ORDER BY played_at DESC LIMIT 10;";
+            const string query = @"SELECT u.username, s.score, s.hidden_word, s.attempts_used, s.comment, s.played_at FROM scores s INNER JOIN users u ON u.user_id = s.user_id WHERE s.user_id = @user_id ORDER BY s.played_at DESC LIMIT 10;";
 
             using var cmd = new NpgsqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@user_id", CurrentUser.Id);
@@ -163,13 +163,14 @@ namespace Word_Guessing_Game.Services
             while (reader.Read())
             {
                 hasScores = true;
-                int score = reader.GetInt32(0);
-                string hiddenWord = reader.GetString(1);
-                int attemptsUsed = reader.GetInt32(2);
-                string comment = reader.GetString(3);
-                DateTime date = reader.GetDateTime(4);
+                string username = reader.GetString(0);
+                int score = reader.GetInt32(1);
+                string hiddenWord = reader.GetString(2);
+                int attemptsUsed = reader.GetInt32(3);
+                string comment = reader.GetString(4);
+                DateTime date = reader.GetDateTime(5);
 
-                Console.WriteLine($"Score: {score} - Date: {date}");
+                Console.WriteLine($"Player: {username} | Score: {score} - Date: {date}");
                 Console.WriteLine($"Word: {hiddenWord} - Attempts Used: {attemptsUsed} - Comment: {comment}");
                 Console.WriteLine("--------------------------------------------------");
             }
