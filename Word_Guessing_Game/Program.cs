@@ -1,4 +1,7 @@
 ﻿using Word_Guessing_Game.Models;
+using Word_Guessing_Game.Services;
+using Word_Guessing_Game.Database;
+
 
 namespace Word_Guessing_Game
 {
@@ -6,6 +9,7 @@ namespace Word_Guessing_Game
     {
         static void Main(string[] args)
         {
+
             bool Replay = true;
 
             while(Replay)

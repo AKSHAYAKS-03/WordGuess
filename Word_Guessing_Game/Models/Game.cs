@@ -31,7 +31,7 @@ namespace Word_Guessing_Game.Models
         public void StartGame()
         {
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("==================== WORD GUESSS GAME ====================");
+            Console.WriteLine("\n\n==================== WORD GUESSS GAME ====================");
             Console.WriteLine();
             Console.WriteLine("Welcome to the Word Guessing Game!");
             Console.ResetColor();
